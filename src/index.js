@@ -1,9 +1,10 @@
 const ical = require('node-ical');
 const { IncomingWebhook } = require('@slack/webhook');
+const moment = require('moment');
 
 const icalUrls = process.env.ICAL_URL.split(',');
 const slackWebhook = process.env.WEBHOOK_URL;
-const today = new Date();
+const today = moment();
 
 const icalPromises = icalUrls.map(icalUrl => {
   return new Promise((resolve, reject) => {
@@ -20,10 +21,13 @@ const icalPromises = icalUrls.map(icalUrl => {
           }
 
           if (data[k].categories.indexOf('leaves') > -1 ) {
-            if (today >= ev.start && today <= ev.end) {
-              const formattedStartDate = `<!date^${ev.start.getTime()/1000}^{date_short}|${ev.start.toLocaleDateString('en-GB')}>`;
-              const formattedEndDate = `<!date^${ev.end.getTime()/1000}^{date_short}|${ev.end.toLocaleDateString('en-GB')}>`;
-              vacations.push(`${ev.organizer.params.CN} is on leave today (between ${formattedStartDate} and ${formattedEndDate})`);
+            const start = moment(ev.start);
+            const end = moment(ev.end).subtract(1, 'seconds');
+
+            if (today.isBetween(start, end)) {
+              const formattedStartDate = `<!date^${start.unix()}^{date_short}|${start.format('DD/MM/YYYY')}>`;
+              const formattedEndDate = `<!date^${end.unix()}^{date_short}|${end.format('DD/MM/YYYY')}>`;
+              vacations.push(`${ev.attendee.params.CN} is on leave today (between ${formattedStartDate} and ${formattedEndDate})`);
             }
           }
         }
@@ -36,6 +40,7 @@ const icalPromises = icalUrls.map(icalUrl => {
 
 Promise.all(icalPromises).then((values) => {
   const vacations =  [].concat.apply([], values).sort();
+  console.log(vacations);
 
   if (vacations.length > 0) {
     const webhook = new IncomingWebhook(slackWebhook);

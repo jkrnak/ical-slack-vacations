@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: confluence-vacations
 spec:
-  schedule: "45 14 * * *"
+  schedule: "50 15 * * *"
   jobTemplate:
     spec:
       template:
@@ -16,6 +16,7 @@ spec:
           containers:
           - name: confluence-vacations
             image: jkrnak/ical-slack-vacations
+            imagePullPolicy: Always
             env:
             - name: WEBHOOK_URL
               valueFrom:
