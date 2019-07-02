@@ -3,11 +3,16 @@ kind: CronJob
 metadata:
   name: confluence-vacations
 spec:
-  schedule: "0 10 14 ? * *"
+  schedule: "45 14 * * *"
   jobTemplate:
     spec:
       template:
         spec:
+          securityContext:
+            fsGroup: 65534
+            runAsUser: 65534
+            runAsGroup: 65534
+            runAsNonRoot: true
           containers:
           - name: confluence-vacations
             image: jkrnak/ical-slack-vacations
@@ -22,4 +27,11 @@ spec:
                 secretKeyRef:
                   name: cronsecret
                   key: ical-url
-          restartPolicy: OnFailure
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "512Mi"
+              limits:
+                cpu: "100m"
+                memory: "512Mi"
+          restartPolicy: Never
