@@ -25,9 +25,14 @@ const icalPromises = icalUrls.map(icalUrl => {
             const end = moment(ev.end).subtract(1, 'seconds');
 
             if (today.isBetween(start, end)) {
-              const formattedStartDate = `<!date^${start.unix()}^{date_short}|${start.format('DD/MM/YYYY')}>`;
-              const formattedEndDate = `<!date^${end.unix()}^{date_short}|${end.format('DD/MM/YYYY')}>`;
-              vacations.push(`${ev.attendee.params.CN} is on leave today (between ${formattedStartDate} and ${formattedEndDate})`);
+              const lastDayOfHoliday = moment(end).calendar( null, {
+                sameDay:  '[today]',
+                nextDay:  '[tomorrow]',
+                nextWeek: 'dddd [next week] DD/MM',
+                sameElse: 'DD/MM'
+              });
+
+              vacations.push(`${ev.attendee.params.CN} is on leave today (last day of leave is ${lastDayOfHoliday})`);
             }
           }
         }
