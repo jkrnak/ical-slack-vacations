@@ -32,7 +32,7 @@ const icalPromises = icalUrls.map(icalUrl => {
                 sameElse: 'DD/MM'
               });
 
-              vacations.push(`${ev.attendee.params.CN} is on leave today (last day of leave is ${lastDayOfHoliday})`);
+              vacations.push(`*${ev.attendee.params.CN}* is on leave today (last day of leave is ${lastDayOfHoliday})`);
             }
           }
         }
