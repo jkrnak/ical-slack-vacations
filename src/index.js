@@ -28,7 +28,7 @@ const icalPromises = icalUrls.map(icalUrl => {
               const lastDayOfHoliday = moment(end).calendar( null, {
                 sameDay:  '[today]',
                 nextDay:  '[tomorrow]',
-                nextWeek: 'dddd [next week] DD/MM',
+                nextWeek: 'dddd DD/MM',
                 sameElse: 'DD/MM'
               });
 
