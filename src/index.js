@@ -63,7 +63,8 @@ const icalPromises = icalUrls.map(icalUrl => {
 
 Promise.all(icalPromises).then((values) => {
   vacations = merge.all(values)
-  let leaveStatus, publicHolidaysStatus = ""
+  let leaveStatus = publicHolidaysStatus = ""
+  let statusMessage = "No one is on leave today! :tada:"
 
   if (vacations.leave.length > 0) {
     leaveStatus = `On Leave:\n${vacations.leave.join('\n')}`
@@ -76,15 +77,15 @@ Promise.all(icalPromises).then((values) => {
   }
 
   if (leaveStatus.length > 0 || publicHolidaysStatus.length > 0) {
-    const statusMessage = `${leaveStatus}\n${publicHolidaysStatus}`
-    const webhook = new IncomingWebhook(slackWebhook);
-
-    // Send the notification
-    (async () => {
-      await webhook.send({
-        text: statusMessage,
-      });
-    })();
+    statusMessage = `${leaveStatus}\n${publicHolidaysStatus}`
   }
+
+  const webhook = new IncomingWebhook(slackWebhook);
+  // Send the notification
+  (async () => {
+    await webhook.send({
+      text: statusMessage,
+    });
+  })();
 });
 
