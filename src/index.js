@@ -1,4 +1,5 @@
-const ical = require('node-ical');
+
+const { fromURL } = require('node-ical');
 const { IncomingWebhook } = require('@slack/webhook');
 const moment = require('moment');
 const merge = require('deepmerge');
@@ -68,10 +69,8 @@ const icalPromises = icalUrls.map(icalUrl => {
           if (data[k][icalCategoryKey].indexOf('Public Holiday') > -1 ) {
             const start = moment(ev.start);
 
-            if (start.isSame(today, 'day')) {
-              if (!calEvents["publicHolidays"].hasOwnProperty(ev.summary)) {
-                calEvents["publicHolidays"][ev.summary] = [];
-              }
+      if (ev.categories.indexOf('Public Holiday') > -1) {
+        const start = moment(ev.start);
 
               attendeeNames = extractAttendeeNames(ev.attendee)
               calEvents["publicHolidays"][ev.summary].push(
@@ -79,6 +78,10 @@ const icalPromises = icalUrls.map(icalUrl => {
               );
             }
           }
+
+          Object.values(ev.attendee).forEach((attendee) => {
+            calEvents.publicHolidays[ev.summary].push(`>*${attendee.params.CN}*`);
+          });
         }
       }
 
@@ -89,21 +92,22 @@ const icalPromises = icalUrls.map(icalUrl => {
   }).catch((error) => {
     console.error(`Error processing calendar: ${error}`);
   });
-});
+}));
 
 Promise.all(icalPromises).then((values) => {
   const vacations = merge.all(values);
-  let leaveStatus = publicHolidaysStatus = "";
-  let statusMessage = "No one is on leave today! :tada:";
+  let leaveStatus = '';
+  let publicHolidaysStatus = '';
+  let statusMessage = 'No one is on leave today! :tada:';
 
   if (vacations.leave.length > 0) {
     leaveStatus = `On Leave:\n${vacations.leave.join('\n')}`;
   }
 
   if (Object.keys(vacations.publicHolidays).length > 0) {
-    for (let k in vacations.publicHolidays) {
-      publicHolidaysStatus += `\n${k}:\n${vacations.publicHolidays[k].join('\n')}`;
-    }
+    Object.keys(vacations.publicHolidays).forEach((key) => {
+      publicHolidaysStatus += `\n${key}:\n${vacations.publicHolidays[key].join('\n')}`;
+    });
   }
 
   if (leaveStatus.length > 0 || publicHolidaysStatus.length > 0) {
