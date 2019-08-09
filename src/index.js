@@ -1,7 +1,7 @@
 const ical = require('node-ical');
 const { IncomingWebhook } = require('@slack/webhook');
 const moment = require('moment');
-const merge = require('deepmerge')
+const merge = require('deepmerge');
 
 const icalUrls = process.env.ICAL_URL.split(',');
 const slackWebhook = process.env.WEBHOOK_URL;
