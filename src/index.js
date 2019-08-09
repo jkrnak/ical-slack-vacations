@@ -45,7 +45,7 @@ const icalPromises = icalUrls.map(icalUrl => {
 
             if (start.isSame(today, 'day')) {
               if (!calEvents["publicHolidays"].hasOwnProperty(ev.summary)) {
-                calEvents["publicHolidays"][ev.summary] = []
+                calEvents["publicHolidays"][ev.summary] = [];
               }
 
               for (let i in ev.attendee) {
@@ -62,22 +62,22 @@ const icalPromises = icalUrls.map(icalUrl => {
 });
 
 Promise.all(icalPromises).then((values) => {
-  vacations = merge.all(values)
-  let leaveStatus = publicHolidaysStatus = ""
-  let statusMessage = "No one is on leave today! :tada:"
+  const vacations = merge.all(values);
+  let leaveStatus = publicHolidaysStatus = "";
+  let statusMessage = "No one is on leave today! :tada:";
 
   if (vacations.leave.length > 0) {
-    leaveStatus = `On Leave:\n${vacations.leave.join('\n')}`
+    leaveStatus = `On Leave:\n${vacations.leave.join('\n')}`;
   }
 
   if (Object.keys(vacations.publicHolidays).length > 0) {
     for (let k in vacations.publicHolidays) {
-      publicHolidaysStatus += `\n${k}:\n${vacations.publicHolidays[k].join('\n')}`
+      publicHolidaysStatus += `\n${k}:\n${vacations.publicHolidays[k].join('\n')}`;
     }
   }
 
   if (leaveStatus.length > 0 || publicHolidaysStatus.length > 0) {
-    statusMessage = `${leaveStatus}\n${publicHolidaysStatus}`
+    statusMessage = `${leaveStatus}\n${publicHolidaysStatus}`;
   }
 
   const webhook = new IncomingWebhook(slackWebhook);
