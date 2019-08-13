@@ -1,6 +1,7 @@
 const ical = require('node-ical');
 const { IncomingWebhook } = require('@slack/webhook');
 const moment = require('moment');
+const merge = require('deepmerge');
 
 const icalUrls = process.env.ICAL_URL.split(',');
 const slackWebhook = process.env.WEBHOOK_URL;
@@ -10,7 +11,10 @@ const icalPromises = icalUrls.map(icalUrl => {
   return new Promise((resolve, reject) => {
     ical.fromURL(icalUrl, {}, function(err, data) {
       if (err) reject(err);
-      const vacations = [];
+      const calEvents = {
+        "leave": [],
+        "publicHolidays": {}
+      };
 
       for (let k in data) {
         if (data.hasOwnProperty(k)) {
@@ -32,30 +36,56 @@ const icalPromises = icalUrls.map(icalUrl => {
                 sameElse: 'DD/MM'
               });
 
-              vacations.push(`*${ev.attendee.params.CN}* is on leave today (last day of leave is ${lastDayOfHoliday})`);
+              calEvents["leave"].push(`>*${ev.attendee.params.CN}* (last day of leave is ${lastDayOfHoliday})`);
+            }
+          }
+
+          if (data[k].categories.indexOf('Public Holiday') > -1 ) {
+            const start = moment(ev.start);
+
+            if (start.isSame(today, 'day')) {
+              if (!calEvents["publicHolidays"].hasOwnProperty(ev.summary)) {
+                calEvents["publicHolidays"][ev.summary] = [];
+              }
+
+              for (let i in ev.attendee) {
+                calEvents["publicHolidays"][ev.summary].push(`>*${ev.attendee[i].params.CN}*`);
+              }
             }
           }
         }
       }
 
-      resolve(vacations);
+      resolve(calEvents);
     });
   });
 });
 
 Promise.all(icalPromises).then((values) => {
-  const vacations =  [].concat.apply([], values).sort();
-  console.log(vacations);
+  const vacations = merge.all(values);
+  let leaveStatus = publicHolidaysStatus = "";
+  let statusMessage = "No one is on leave today! :tada:";
 
-  if (vacations.length > 0) {
-    const webhook = new IncomingWebhook(slackWebhook);
-
-    // Send the notification
-    (async () => {
-      await webhook.send({
-        text: vacations.join("\n"),
-      });
-    })();
+  if (vacations.leave.length > 0) {
+    leaveStatus = `On Leave:\n${vacations.leave.join('\n')}`;
   }
+
+  if (Object.keys(vacations.publicHolidays).length > 0) {
+    for (let k in vacations.publicHolidays) {
+      publicHolidaysStatus += `\n${k}:\n${vacations.publicHolidays[k].join('\n')}`;
+    }
+  }
+
+  if (leaveStatus.length > 0 || publicHolidaysStatus.length > 0) {
+    statusMessage = `${leaveStatus}\n${publicHolidaysStatus}`;
+  }
+
+  const webhook = new IncomingWebhook(slackWebhook);
+  // Send the notification
+  (async () => {
+    await webhook.send({
+      text: statusMessage,
+    });
+  })();
 });
 
