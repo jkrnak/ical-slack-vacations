@@ -36,7 +36,9 @@ const icalPromises = icalUrls.map(icalUrl => {
                 sameElse: 'DD/MM'
               });
 
-              calEvents["leave"].push(`>*${ev.attendee.params.CN}* (last day of leave is ${lastDayOfHoliday})`);
+              if (ev.attendee && ev.attendee.params) {
+                calEvents["leave"].push(`>*${ev.attendee.params.CN}* (last day of leave is ${lastDayOfHoliday})`);
+              }
             }
           }
 
@@ -49,7 +51,9 @@ const icalPromises = icalUrls.map(icalUrl => {
               }
 
               for (let i in ev.attendee) {
-                calEvents["publicHolidays"][ev.summary].push(`>*${ev.attendee[i].params.CN}*`);
+                if (ev.attendee[i] && ev.attendee[i].params) {
+                  calEvents["publicHolidays"][ev.summary].push(`>*${ev.attendee[i].params.CN}*`);
+                }
               }
             }
           }
