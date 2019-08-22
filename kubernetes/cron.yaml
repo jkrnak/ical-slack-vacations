@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: confluence-vacations
 spec:
-  schedule: "0 7 * * *"
+  schedule: "0 7 * * 1-5"
   jobTemplate:
     spec:
       template:
