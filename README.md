@@ -14,3 +14,19 @@ Amend the name of the secret and the example cronjob spec as needed, this exampl
 kubectl create secret generic cronsecret --from-literal=webhook-url=https://example.com/slack --from-literal=ical-url=https://example.com/ical
 kubectl apply -f kubernetes/cron.yaml
 ```
+
+## Run locally
+
+The project includes docker container for VSCode's Remote - Containers extension, it makes it very easy to set up a dev environment.
+There is a `.env.dist` file included, copy it to `.env` and add the iCal URLs and the Slack webhook URL for the channel.
+
+Then you can run the app with
+
+```bash
+npm start
+```
+
+### Create an app in slack
+
+You will need to create an application in slack into the workspace you want to post messages to.
+In the application you can than add webhook URLs under the "Incoming webhooks" menu.
