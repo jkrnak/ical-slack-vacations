@@ -2,6 +2,9 @@ const ical = require('node-ical');
 const { IncomingWebhook } = require('@slack/webhook');
 const moment = require('moment');
 const merge = require('deepmerge');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const icalUrls = process.env.ICAL_URL.split(',');
 const slackWebhook = process.env.WEBHOOK_URL;
@@ -9,7 +12,7 @@ const today = moment();
 
 const icalPromises = icalUrls.map(icalUrl => {
   return new Promise((resolve, reject) => {
-    ical.fromURL(icalUrl, {}, function(err, data) {
+    ical.fromURL(icalUrl, {}, function (err, data) {
       if (err) reject(err);
       const calEvents = {
         "leave": [],
@@ -24,14 +27,14 @@ const icalPromises = icalUrls.map(icalUrl => {
             continue;
           }
 
-          if (data[k].categories.indexOf('leaves') > -1 ) {
+          if (data[k].categories.indexOf('leaves') > -1) {
             const start = moment(ev.start);
             const end = moment(ev.end).subtract(1, 'seconds');
 
             if (today.isBetween(start, end)) {
-              const lastDayOfHoliday = moment(end).calendar( null, {
-                sameDay:  '[today]',
-                nextDay:  '[tomorrow]',
+              const lastDayOfHoliday = moment(end).calendar(null, {
+                sameDay: '[today]',
+                nextDay: '[tomorrow]',
                 nextWeek: 'dddd DD/MM',
                 sameElse: 'DD/MM'
               });
@@ -42,7 +45,7 @@ const icalPromises = icalUrls.map(icalUrl => {
             }
           }
 
-          if (data[k].categories.indexOf('Public Holiday') > -1 ) {
+          if (data[k].categories.indexOf('Public Holiday') > -1) {
             const start = moment(ev.start);
 
             if (start.isSame(today, 'day')) {
@@ -87,8 +90,14 @@ Promise.all(icalPromises).then((values) => {
   const webhook = new IncomingWebhook(slackWebhook);
   // Send the notification
   (async () => {
-    await webhook.send({
-      text: statusMessage,
-    });
+    try {
+      await webhook.send({
+        text: statusMessage,
+      });
+    } catch (err) {
+      console.error("Error while posting to slack", err);
+    }
   })();
+}).catch(err => {
+  console.error("Error while parsing the iCal calendars", err);
 });
