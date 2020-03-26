@@ -97,17 +97,17 @@ Promise.all(icalPromises).then((values) => {
 
   console.info('Sending the following message to Slack webhook:\n\n', statusMessage);
 
-  // const webhook = new IncomingWebhook(slackWebhook);
-  // // Send the notification
-  // (async () => {
-  //   try {
-  //     await webhook.send({
-  //       text: statusMessage,
-  //     });
-  //   } catch (err) {
-  //     console.error("Error while posting to slack", err);
-  //   }
-  // })();
+  const webhook = new IncomingWebhook(slackWebhook);
+  // Send the notification
+  (async () => {
+    try {
+      await webhook.send({
+        text: statusMessage,
+      });
+    } catch (err) {
+      console.error("Error while posting to slack", err);
+    }
+  })();
   console.info('Job completed successfully.')
 }).catch(err => {
   console.error("Error while parsing the iCal calendars", err);
