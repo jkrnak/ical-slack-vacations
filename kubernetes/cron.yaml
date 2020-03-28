@@ -28,6 +28,11 @@ spec:
                 secretKeyRef:
                   name: cronsecret
                   key: ical-url
+            - name: ICAL_CATEGORY_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cronsecret
+                  key: ical-category-key
             resources:
               requests:
                 cpu: "100m"
