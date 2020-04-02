@@ -12,12 +12,33 @@ const icalCategoryKey = process.env.ICAL_CATEGORY_KEY || 'categories'
 const slackWebhook = process.env.WEBHOOK_URL;
 const today = moment();
 
+const extractAttendeeNames = (attendeeObj) => {
+  const attendeeNames = []
+
+  // Multiple attendees (Array)
+  if (attendeeObj instanceof Array) {
+    for (let i in attendeeObj) {
+      if (attendeeObj[i] && attendeeObj[i].params) {
+        attendeeNames.push(attendeeObj[i].params.CN);
+      }
+    }
+    return attendeeNames;
+  }
+
+  // Single atendee (Object)
+  if (attendeeObj.params) {
+    attendeeNames.push(attendeeObj.params.CN);
+  }
+  return attendeeNames;
+}
+
 const icalPromises = icalUrls.map(icalUrl => {
   return new Promise((resolve, reject) => {
     ical.fromURL(icalUrl, {}, function (err, data) {
       if (err) reject(err);
 
       console.info('Data read from ical url successfully.')
+      console.info('Using category key:', icalCategoryKey)
 
       const calEvents = {
         "leave": [],
@@ -44,9 +65,15 @@ const icalPromises = icalUrls.map(icalUrl => {
                 sameElse: 'DD/MM'
               });
 
-              if (ev.attendee && ev.attendee.params) {
-                calEvents["leave"].push(`>*${ev.attendee.params.CN}* (last day of leave is ${lastDayOfHoliday})`);
+              // Ignore events without attendees
+              if (!ev.attendee) {
+                continue;
               }
+
+              attendeeNames = extractAttendeeNames(ev.attendee)
+              calEvents["leave"].push(
+                ...attendeeNames.map((name) => { return `>*${name}* (last day of leave is ${lastDayOfHoliday})` })
+              );
             }
           }
 
@@ -56,11 +83,10 @@ const icalPromises = icalUrls.map(icalUrl => {
       if (ev.categories.indexOf('Public Holiday') > -1) {
         const start = moment(ev.start);
 
-              for (let i in ev.attendee) {
-                if (ev.attendee[i] && ev.attendee[i].params) {
-                  calEvents["publicHolidays"][ev.summary].push(`>*${ev.attendee[i].params.CN}*`);
-                }
-              }
+              attendeeNames = extractAttendeeNames(ev.attendee)
+              calEvents["publicHolidays"][ev.summary].push(
+                ...attendeeNames.map((name) => { return `>*${ev.attendee[i].params.CN}*` })
+              );
             }
           }
 
