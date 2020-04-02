@@ -11,12 +11,22 @@ const icalCategoryKey = process.env.ICAL_CATEGORY_KEY || 'categories'
 const slackWebhook = process.env.WEBHOOK_URL;
 const today = moment();
 
+const extractAttendeeNames = (attendeeObj) => {
+  // Attendee can be an Object if only one entry, Array otherwise
+  const attendeeArray = Array.isArray(attendeeObj) ? attendeeObj : [attendeeObj]
+
+  return attendeeArray
+    .filter( attendee => attendee && attendee.params && attendee.params.CN )
+    .map(attendee => attendee.params.CN);
+}
+
 const icalPromises = icalUrls.map(icalUrl => {
   return new Promise((resolve, reject) => {
     ical.fromURL(icalUrl, {}, function (err, data) {
       if (err) reject(err);
 
       console.info('Data read from ical url successfully.')
+      console.info('Using category key:', icalCategoryKey)
 
       const calEvents = {
         "leave": [],
@@ -43,9 +53,15 @@ const icalPromises = icalUrls.map(icalUrl => {
                 sameElse: 'DD/MM'
               });
 
-              if (ev.attendee && ev.attendee.params) {
-                calEvents["leave"].push(`>*${ev.attendee.params.CN}* (last day of leave is ${lastDayOfHoliday})`);
+              // Ignore events without attendees
+              if (!ev.attendee) {
+                continue;
               }
+
+              attendeeNames = extractAttendeeNames(ev.attendee)
+              calEvents["leave"].push(
+                ...attendeeNames.map((name) => { return `>*${name}* (last day of leave is ${lastDayOfHoliday})` })
+              );
             }
           }
 
@@ -57,11 +73,10 @@ const icalPromises = icalUrls.map(icalUrl => {
                 calEvents["publicHolidays"][ev.summary] = [];
               }
 
-              for (let i in ev.attendee) {
-                if (ev.attendee[i] && ev.attendee[i].params) {
-                  calEvents["publicHolidays"][ev.summary].push(`>*${ev.attendee[i].params.CN}*`);
-                }
-              }
+              attendeeNames = extractAttendeeNames(ev.attendee)
+              calEvents["publicHolidays"][ev.summary].push(
+                ...attendeeNames.map((name) => { return `>*${ev.attendee[i].params.CN}*` })
+              );
             }
           }
         }
@@ -105,7 +120,7 @@ Promise.all(icalPromises).then((values) => {
         text: statusMessage,
       });
     } catch (err) {
-      console.error("Error while posting to slack", err);
+      console.error("Error while posting to slack\n", err);
     }
   })();
   console.info('Job completed successfully.')
