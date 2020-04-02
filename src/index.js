@@ -13,23 +13,12 @@ const slackWebhook = process.env.WEBHOOK_URL;
 const today = moment();
 
 const extractAttendeeNames = (attendeeObj) => {
-  const attendeeNames = []
+  // Attendee can be an Object if only one entry, Array otherwise
+  const attendeeArray = Array.isArray(attendeeObj) ? attendeeObj : [attendeeObj]
 
-  // Multiple attendees (Array)
-  if (attendeeObj instanceof Array) {
-    for (let i in attendeeObj) {
-      if (attendeeObj[i] && attendeeObj[i].params) {
-        attendeeNames.push(attendeeObj[i].params.CN);
-      }
-    }
-    return attendeeNames;
-  }
-
-  // Single atendee (Object)
-  if (attendeeObj.params) {
-    attendeeNames.push(attendeeObj.params.CN);
-  }
-  return attendeeNames;
+  return attendeeArray
+    .filter( attendee => attendee && attendee.params && attendee.params.CN )
+    .map(attendee => attendee.params.CN);
 }
 
 const icalPromises = icalUrls.map(icalUrl => {
@@ -135,7 +124,7 @@ Promise.all(icalPromises).then((values) => {
         text: statusMessage,
       });
     } catch (err) {
-      console.error("Error while posting to slack", err);
+      console.error("Error while posting to slack\n", err);
     }
   })();
   console.info('Job completed successfully.')
