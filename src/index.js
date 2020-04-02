@@ -92,7 +92,7 @@ const icalPromises = icalUrls.map(icalUrl => {
   }).catch((error) => {
     console.error(`Error processing calendar: ${error}`);
   });
-}));
+});
 
 Promise.all(icalPromises).then((values) => {
   const vacations = merge.all(values);
