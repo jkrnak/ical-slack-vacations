@@ -16,7 +16,7 @@ const extractAttendeeNames = (attendeeObj) => {
   const attendeeArray = Array.isArray(attendeeObj) ? attendeeObj : [attendeeObj]
 
   return attendeeArray
-    .filter( attendee => attendee && attendee.params && attendee.params.CN )
+    .filter(attendee => attendee && attendee.params && attendee.params.CN)
     .map(attendee => attendee.params.CN);
 }
 
@@ -33,15 +33,18 @@ const icalPromises = icalUrls.map(icalUrl => {
         "publicHolidays": {}
       };
 
-      for (let k in data) {
-        if (data.hasOwnProperty(k)) {
-          const ev = data[k];
+      const entriesCount = Object.keys(data).length;
+      console.info(`Calendar has around ${entriesCount} entries`);
 
-          if (ev.type !== 'VEVENT' || !(icalCategoryKey in ev)) {
+      for (let eventId in data) {
+        if (data.hasOwnProperty(eventId)) {
+          const ev = data[eventId];
+
+          if (ev.type !== 'VEVENT' || !ev.hasOwnProperty(icalCategoryKey)) {
             continue;
           }
 
-          if (data[k][icalCategoryKey].indexOf('leaves') > -1) {
+          if (ev[icalCategoryKey].indexOf('leaves') > -1) {
             const start = moment(ev.start);
             const end = moment(ev.end).subtract(1, 'seconds');
 
@@ -65,7 +68,7 @@ const icalPromises = icalUrls.map(icalUrl => {
             }
           }
 
-          if (data[k][icalCategoryKey].indexOf('Public Holiday') > -1 ) {
+          if (ev[icalCategoryKey].indexOf('Public Holiday') > -1) {
             const start = moment(ev.start);
 
             if (start.isSame(today, 'day')) {
