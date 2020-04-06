@@ -1,6 +1,6 @@
-import { config } from 'dotenv';
-import { run } from './cronjob';
-import { CronJobOptions } from './types';
+import { config } from "dotenv";
+import { run } from "./cronjob";
+import { CronJobOptions } from "./types";
 config();
 
 const cronJobOptions: CronJobOptions = {
@@ -12,12 +12,12 @@ const cronJobOptions: CronJobOptions = {
     webhookUrl: process.env.WEBHOOK_URL,
   },
   debug: !!process.env.IS_DEBUG,
-}
+};
 
 run(cronJobOptions)
   .then(() => {
-    console.info('Job completed successfully.')
+    console.info("Job completed successfully.");
   })
   .catch((e) => {
-    console.info('Job has failed:\n', e)
-  })
+    console.info("Job has failed:\n", e);
+  });

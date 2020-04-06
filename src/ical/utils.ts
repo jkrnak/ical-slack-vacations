@@ -1,16 +1,18 @@
-import { AttendeeElement, IcalEvent } from './types';
-import moment from 'moment';
-import { Leave, CustomEvent } from '../types';
+import { AttendeeElement, IcalEvent } from "./types";
+import moment from "moment";
+import { Leave, CustomEvent } from "../types";
 const TODAY = moment();
 
-export const extractAttendeeNames = (attendeeObj: AttendeeElement): string[] => {
+export const extractAttendeeNames = (
+  attendeeObj: AttendeeElement
+): string[] => {
   // Attendee can be an Object if only one entry, Array otherwise
   const attendeeArray = [].concat(attendeeObj);
 
   return attendeeArray
-    .filter( attendee => attendee && attendee.params && attendee.params.CN )
-    .map(attendee => attendee.params.CN);
-}
+    .filter((attendee) => attendee && attendee.params && attendee.params.CN)
+    .map((attendee) => attendee.params.CN);
+};
 
 export const processLeave = (event: IcalEvent): Leave => {
   const start = moment(event.start);

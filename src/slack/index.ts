@@ -1,5 +1,5 @@
-import { CalendarResult, Leave, CustomEvent } from '../types';
-import { SlackClientOptions, SlackClient } from './types';
+import { CalendarResult, Leave, CustomEvent } from "../types";
+import { SlackClientOptions, SlackClient } from "./types";
 import { IncomingWebhook } from "@slack/webhook";
 
 const DEFAULT_MESSAGE = "No one is on leave today! :tada:";
@@ -21,7 +21,7 @@ const buildCustomEventMessage = (customEvents: CustomEvent[]) => {
     .map((customEvent) => {
       const hasAttendees = customEvent.attendees.length > 0;
       return (
-        `${customEvent.name}${hasAttendees ? ':':''}\n` +
+        `${customEvent.name}${hasAttendees ? ":" : ""}\n` +
         customEvent.attendees.map((attendee) => `>*${attendee}*`).join("\n")
       );
     })
@@ -33,12 +33,16 @@ const buildMessage = (calendarResult: CalendarResult): string => {
   const customEventMessage = buildCustomEventMessage(
     calendarResult.customEvent
   );
-  return ['On leave:', leaveMessage, customEventMessage].join("\n");
+  return ["On leave:", leaveMessage, customEventMessage].join("\n");
 };
 
-export function getClient({ debug = false, webhookUrl }: SlackClientOptions): SlackClient {
-
-  const sendMessage = async (calendarResult: CalendarResult): Promise<boolean> => {
+export function getClient({
+  debug = false,
+  webhookUrl,
+}: SlackClientOptions): SlackClient {
+  const sendMessage = async (
+    calendarResult: CalendarResult
+  ): Promise<boolean> => {
     const message = buildMessage(calendarResult);
 
     console.info(
