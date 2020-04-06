@@ -41,6 +41,20 @@ const mockLeaveEventMultiple = {
   ],
 };
 
+const mockLeaveEventFuture = {
+  type: IcalType.VEVENT,
+  params: [],
+  start: moment().add(2, "day").toISOString(),
+  end: moment().add(3, "day").toISOString(),
+  summary: "Vacation",
+  "CONFLUENCE-SUBCALENDAR-TYPE": "leaves",
+  attendee: {
+    params: {
+      CN: "Attendee number 1",
+    },
+  },
+};
+
 const mockCustomEventSingle = {
   type: IcalType.VEVENT,
   params: [],
@@ -74,6 +88,20 @@ const mockCustomEventMultiple = {
       },
     },
   ],
+};
+
+const mockCustomEventFuture = {
+  type: IcalType.VEVENT,
+  params: [],
+  start: moment().add(2, "day").toISOString(),
+  end: moment().add(3, "day").toISOString(),
+  summary: "Future National Holiday",
+  "CONFLUENCE-SUBCALENDAR-TYPE": "custom",
+  attendee: {
+    params: {
+      CN: "Attendee number 1",
+    },
+  },
 };
 
 const mockAttendeeObj = {
@@ -116,6 +144,11 @@ it("process leaves correctly with multiple attendees", async () => {
   expect(leave.lastDay).toBe("tomorrow");
 });
 
+it("ignores and does not process leaves in the future", async () => {
+  const leave = processLeave(mockLeaveEventFuture);
+  expect(leave).toBeUndefined();
+});
+
 it("process custom event correctly with one attendee", async () => {
   const customEvent = processCustomEvent(mockCustomEventSingle);
   expect(customEvent).toBeDefined();
@@ -128,4 +161,9 @@ it("process custom event correctly with multiple attendee", async () => {
   expect(customEvent).toBeDefined();
   expect(customEvent.attendees.length).toBe(2);
   expect(customEvent.name).toBe(mockCustomEventSingle.summary);
+});
+
+it("ignores and does not process custom event in the future", async () => {
+  const customEvent = processCustomEvent(mockCustomEventFuture);
+  expect(customEvent).toBeUndefined();
 });
