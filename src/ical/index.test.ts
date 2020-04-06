@@ -3,6 +3,10 @@ import ical from "node-ical";
 import { fetchInfo } from "./index";
 import { IcalType, IcalClientOptions } from './types';
 
+// Silence logs on tests
+console.info = jest.fn();
+console.error = jest.fn();
+
 const mockCalendarEvent = {
   Event1: {
     type: IcalType.VEVENT,
@@ -205,4 +209,5 @@ it("handles fetch issues", async () => {
     categoryKey: "CONFLUENCE-SUBCALENDAR-TYPE",
   });
   expect(calendarResult).toBeInstanceOf(Error);
+  expect(console.error).toHaveBeenCalled();
 });

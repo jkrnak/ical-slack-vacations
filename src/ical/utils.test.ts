@@ -6,6 +6,10 @@ import {
 } from "./utils";
 import { IcalType } from "./types";
 
+// Silence logs on tests
+console.info = jest.fn();
+console.error = jest.fn();
+
 const mockLeaveEventSingle = {
   type: IcalType.VEVENT,
   params: [],
