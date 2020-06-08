@@ -204,10 +204,13 @@ it("handles default client options", async () => {
 it("handles fetch issues", async () => {
   mockIcalFromUrl(new Error('There was an error with fetching.'), null);
 
-  const calendarResult = await fetchInfo("https://mock.url", {
-    debug: true,
-    categoryKey: "CONFLUENCE-SUBCALENDAR-TYPE",
-  });
-  expect(calendarResult).toBeInstanceOf(Error);
-  expect(console.error).toHaveBeenCalled();
+  try {
+    const calendarResult = await fetchInfo("https://mock.url", {
+      debug: true,
+      categoryKey: "CONFLUENCE-SUBCALENDAR-TYPE",
+    });
+  } catch (err) {
+    expect(err).toBeInstanceOf(Error);
+    expect(console.error).toHaveBeenCalled();
+  }
 });

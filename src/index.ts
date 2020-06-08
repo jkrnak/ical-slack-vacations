@@ -19,5 +19,6 @@ run(cronJobOptions)
     console.info("Job completed successfully.");
   })
   .catch((e) => {
-    console.info("Job has failed:\n", e);
+    console.error("Job has failed:\n", e);
+    process.exit(1);
   });

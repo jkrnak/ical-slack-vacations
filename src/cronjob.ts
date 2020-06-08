@@ -14,9 +14,13 @@ export async function run({
 
   debug && console.log("Is running on DEBUG mode.");
 
-  const calendarResult = await ical.fetchInfo(icalOptions.url, {
-    debug,
-    categoryKey: icalOptions.categoryKey,
-  });
-  await slackClient.sendMessage(calendarResult);
+  try {
+    const calendarResult = await ical.fetchInfo(icalOptions.url, {
+      debug,
+      categoryKey: icalOptions.categoryKey,
+    });
+    await slackClient.sendMessage(calendarResult);
+  } catch (err) {
+    console.error(err);
+  }
 }

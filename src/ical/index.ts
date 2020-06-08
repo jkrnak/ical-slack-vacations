@@ -13,7 +13,11 @@ export async function fetchInfo(
     (icalUrl): Promise<CalendarResult> => {
       return new Promise((resolve, reject) => {
         ical.fromURL(icalUrl, {}, function (err: Error, icalData: any) {
-          if (err) reject(err);
+          if (err) {
+            reject(err);
+
+            return;
+          }
 
           console.info("Data read from ical url successfully.");
           console.info("Using category key:", categoryKey);
@@ -66,6 +70,6 @@ export async function fetchInfo(
     .then((calendarResults) => merge.all<CalendarResult>(calendarResults))
     .catch((e) => {
       console.error("Failed processing all events:\n", e);
-      return e;
+      throw e;
     });
 }
